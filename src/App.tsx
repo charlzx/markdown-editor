@@ -421,7 +421,7 @@ const App = () => {
         { id: 'ol', type: 'button', label: 'Ordered List', icon: <ListOrdered size={20} />, action: toolbarActions.ol },
         { id: 'quote', type: 'button', label: 'Blockquote', icon: <Quote size={20} />, action: toolbarActions.quote },
         { id: 'code', type: 'button', label: 'Code Block', icon: <Code2 size={20} />, action: toolbarActions.code },
-        { id: 'image', type: 'button', label: 'Image', icon: <ImageIcon size={20} />, action: toolbarActions.image },
+        // { id: 'image', type: 'button', label: 'Image', icon: <ImageIcon size={20} />, action: toolbarActions.image },
         { id: 'table', type: 'button', label: 'Table', icon: <Table size={20} />, action: toolbarActions.table },
         { id: 'template', type: 'dropdown', label: 'Templates', icon: <FileText size={20} />, items: [
             {label: 'Professional README', action: () => toolbarActions.applyTemplate('professional')},
@@ -431,7 +431,7 @@ const App = () => {
     
     const commands = [
         { name: 'Open File', action: () => openFileInputRef.current?.click(), icon: <Upload size={28} /> },
-        { name: 'Upload Image', action: toolbarActions.image, icon: <ImageIcon size={28} /> },
+        // { name: 'Upload Image', action: toolbarActions.image, icon: <ImageIcon size={28} /> },
         { name: 'Insert Table', action: toolbarActions.table, icon: <Table size={28} /> },
         { name: 'Pro Template', action: () => toolbarActions.applyTemplate('professional'), icon: <FileText size={28} /> },
         { name: 'Profile Template', action: () => toolbarActions.applyTemplate('profile'), icon: <FileText size={28} /> },
