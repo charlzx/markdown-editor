@@ -1329,19 +1329,19 @@ const App: FC = () => {
                                     name={activeProject.name}
                                     onSave={newName => updateActiveProject({ name: newName })}
                                 />
+                                <button
+                                    onClick={() => setIsToolbarVisible(prev => !prev)}
+                                    className={`icon-btn shrink-0 ${isToolbarVisible ? 'text-accent bg-accent/10 border border-accent/20' : 'text-muted-foreground'}`}
+                                    title={isToolbarVisible ? 'Hide formatting toolbar' : 'Show formatting toolbar'}
+                                >
+                                    <Sliders size={16} />
+                                </button>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button onClick={() => setIsCommandPaletteOpen(true)} className="btn btn-secondary h-8 px-3 gap-2">
                                     <Search size={14} />
                                     <span className="hidden sm:inline">Search</span>
                                     <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground font-mono">Ctrl K</kbd>
-                                </button>
-                                <button
-                                    onClick={() => setIsToolbarVisible(prev => !prev)}
-                                    className={`icon-btn ${isToolbarVisible ? 'text-accent bg-accent/10 border border-accent/20' : 'text-muted-foreground'}`}
-                                    title={isToolbarVisible ? 'Hide formatting toolbar' : 'Show formatting toolbar'}
-                                >
-                                    <Sliders size={17} />
                                 </button>
                                 <button onClick={handleCopy} className="icon-btn" title="Copy markdown"><Copy size={17} /></button>
                                 <button onClick={handleDownload} className="btn btn-primary h-8 px-3 gap-2 font-medium"><FileDown size={15} /> Download</button>
@@ -1544,7 +1544,7 @@ const App: FC = () => {
                                             </motion.aside>
                                         )}
                                     </AnimatePresence>
-                                    <div className={`min-h-0 flex-1 overflow-hidden transition-[padding] ${isOutlineOpen || isHistoryOpen ? 'pl-[19.5rem] pt-16' : 'pl-4 pt-16'}`}>
+                                    <div className={`min-h-0 flex-1 overflow-hidden transition-[padding] ${isOutlineOpen || isHistoryOpen ? 'pl-[19.5rem]' : 'pl-4'} ${isToolbarVisible ? 'pt-16' : 'pt-4'}`}>
                                         <Suspense fallback={<div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading editor...</div>}>
                                             <MonacoEditor
                                                 height="100%"
