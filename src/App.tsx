@@ -9,6 +9,7 @@ import React, {
     type FC,
     type ReactNode,
 } from 'react';
+import { createPortal } from 'react-dom';
 import {
     ArrowClockwiseIcon as Redo,
     ArrowCounterClockwiseIcon as Undo,
@@ -43,6 +44,7 @@ import {
     TextItalicIcon as Italic,
     TextStrikethroughIcon as Strikethrough,
     TrashIcon as Trash2,
+    SlidersIcon as Sliders,
     UploadSimpleIcon as Upload,
     XIcon as Close,
 } from '@phosphor-icons/react';
@@ -454,24 +456,27 @@ const DropdownMenu: FC<{ triggerIcon: ReactNode; label: string; children: ReactN
             >
                 {triggerIcon}
             </button>
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        style={{
-                            position: 'fixed',
-                            top: coords.top,
-                            left: coords.left,
-                        }}
-                        className="z-[100] min-w-48 overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-sm"
-                        onClick={() => setIsOpen(false)}
-                    >
-                        {children}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {createPortal(
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            style={{
+                                position: 'fixed',
+                                top: coords.top,
+                                left: coords.left,
+                            }}
+                            className="z-[100] min-w-48 overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-sm"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            {children}
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     );
 };
@@ -553,6 +558,7 @@ const App: FC = () => {
     const [clock, setClock] = useState(() => Date.now());
     const [toast, setToast] = useState({ show: false, message: '' });
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+    const [isToolbarVisible, setIsToolbarVisible] = useState(true);
 
     const editorRef = useRef<EditorInstance | null>(null);
     const monacoRef = useRef<MonacoInstance | null>(null);
@@ -1330,6 +1336,13 @@ const App: FC = () => {
                                     <span className="hidden sm:inline">Search</span>
                                     <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground font-mono">Ctrl K</kbd>
                                 </button>
+                                <button
+                                    onClick={() => setIsToolbarVisible(prev => !prev)}
+                                    className={`icon-btn ${isToolbarVisible ? 'text-accent bg-accent/10 border border-accent/20' : 'text-muted-foreground'}`}
+                                    title={isToolbarVisible ? 'Hide formatting toolbar' : 'Show formatting toolbar'}
+                                >
+                                    <Sliders size={17} />
+                                </button>
                                 <button onClick={handleCopy} className="icon-btn" title="Copy markdown"><Copy size={17} /></button>
                                 <button onClick={handleDownload} className="btn btn-primary h-8 px-3 gap-2 font-medium"><FileDown size={15} /> Download</button>
                             </div>
@@ -1340,51 +1353,61 @@ const App: FC = () => {
                         <PanelGroup direction="horizontal">
                             <Panel defaultSize={50} minSize={isZenMode ? 100 : 24}>
                                 <div className="relative flex h-full flex-col bg-background">
-                                    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 rounded-lg border border-border bg-card/95 p-1.5 text-muted-foreground shadow-sm backdrop-blur max-w-[90%] overflow-x-auto whitespace-nowrap scrollbar-thin">
-                                        <button onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')} title="Toggle theme" className="icon-btn">{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button>
-                                        <button onClick={() => setIsZenMode(!isZenMode)} title={isZenMode ? 'Exit fullscreen' : 'Enter fullscreen'} className="icon-btn">{isZenMode ? <Minimize size={18} /> : <Maximize size={18} />}</button>
-                                        <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
-                                        <button
-                                            onClick={() => setIsOutlineOpen(o => {
-                                                const next = !o;
-                                                if (next) setIsHistoryOpen(false);
-                                                return next;
-                                            })}
-                                            title="Markdown outline"
-                                            className={`icon-btn ${isOutlineOpen ? 'bg-accent text-accent-foreground' : ''}`}
-                                        >
-                                            <Outline size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => setIsHistoryOpen(h => {
-                                                const next = !h;
-                                                if (next) setIsOutlineOpen(false);
-                                                return next;
-                                            })}
-                                            title="Version history"
-                                            className={`icon-btn ${isHistoryOpen ? 'bg-accent text-accent-foreground' : ''}`}
-                                        >
-                                            <Clock3 size={18} />
-                                        </button>
-                                        <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
-                                        <div className="flex items-center gap-1">
-                                            {toolbarItems.map(item => {
-                                                if (item.type === 'divider') return <div key={item.id} className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />;
-                                                if (item.type === 'dropdown') {
-                                                    return (
-                                                        <DropdownMenu key={item.id} triggerIcon={item.icon} label={item.label || ''}>
-                                                            {item.items?.map(sub => (
-                                                                <button key={sub.label} onClick={sub.action} className="dropdown-item">{sub.label}</button>
-                                                            ))}
-                                                        </DropdownMenu>
-                                                    );
-                                                }
-                                                return <button key={item.id} onClick={item.action} title={item.label} className="icon-btn">{item.icon}</button>;
-                                            })}
-                                        </div>
-                                        <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
-                                        <button onClick={() => openFileInputRef.current?.click()} className="icon-btn" title="Open file"><Upload size={18} /></button>
-                                    </div>
+                                    <AnimatePresence>
+                                        {isToolbarVisible && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10, x: '-50%' }}
+                                                animate={{ opacity: 1, y: 0, x: '-50%' }}
+                                                exit={{ opacity: 0, y: -10, x: '-50%' }}
+                                                transition={{ duration: 0.15, ease: 'easeOut' }}
+                                                className="absolute top-3 left-1/2 z-40 flex items-center gap-1 rounded-lg border border-border bg-card/95 p-1.5 text-muted-foreground shadow-sm backdrop-blur max-w-[90%] overflow-x-auto whitespace-nowrap scrollbar-thin"
+                                            >
+                                                <button onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')} title="Toggle theme" className="icon-btn">{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button>
+                                                <button onClick={() => setIsZenMode(!isZenMode)} title={isZenMode ? 'Exit fullscreen' : 'Enter fullscreen'} className="icon-btn">{isZenMode ? <Minimize size={18} /> : <Maximize size={18} />}</button>
+                                                <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
+                                                <button
+                                                    onClick={() => setIsOutlineOpen(o => {
+                                                        const next = !o;
+                                                        if (next) setIsHistoryOpen(false);
+                                                        return next;
+                                                    })}
+                                                    title="Markdown outline"
+                                                    className={`icon-btn ${isOutlineOpen ? 'bg-accent text-accent-foreground' : ''}`}
+                                                >
+                                                    <Outline size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setIsHistoryOpen(h => {
+                                                        const next = !h;
+                                                        if (next) setIsOutlineOpen(false);
+                                                        return next;
+                                                    })}
+                                                    title="Version history"
+                                                    className={`icon-btn ${isHistoryOpen ? 'bg-accent text-accent-foreground' : ''}`}
+                                                >
+                                                    <Clock3 size={18} />
+                                                </button>
+                                                <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
+                                                <div className="flex items-center gap-1">
+                                                    {toolbarItems.map(item => {
+                                                        if (item.type === 'divider') return <div key={item.id} className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />;
+                                                        if (item.type === 'dropdown') {
+                                                            return (
+                                                                <DropdownMenu key={item.id} triggerIcon={item.icon} label={item.label || ''}>
+                                                                    {item.items?.map(sub => (
+                                                                        <button key={sub.label} onClick={sub.action} className="dropdown-item">{sub.label}</button>
+                                                                    ))}
+                                                                </DropdownMenu>
+                                                            );
+                                                        }
+                                                        return <button key={item.id} onClick={item.action} title={item.label} className="icon-btn">{item.icon}</button>;
+                                                    })}
+                                                </div>
+                                                <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
+                                                <button onClick={() => openFileInputRef.current?.click()} className="icon-btn" title="Open file"><Upload size={18} /></button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                     <AnimatePresence>
                                         {isOutlineOpen && (
                                             <motion.aside
