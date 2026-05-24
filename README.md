@@ -1,6 +1,6 @@
-# readme-editor
+# markdown-editor
 
-A modern, browser-based Markdown editor built specifically for creating and editing professional README files. Features a split-pane interface with a code editor, live preview, document outline, and full project management — all running locally in your browser.
+A modern, browser-based Markdown editor built specifically for creating and editing professional Markdown files. Features a split-pane interface with a code editor, live preview, document outline, and full project management — all running locally in your browser.
 
 **Live Demo:** [readme.charlz.dev](https://readme.charlz.dev)
 
@@ -9,9 +9,9 @@ A modern, browser-based Markdown editor built specifically for creating and edit
 ## Features
 
 - **Split-pane editor & preview** — Resizable panels with Monaco editor (the same engine powering VS Code) on the left and a live-rendered Markdown preview on the right.
-- **Multi-project management** — Create, rename, and delete multiple README projects. All data persists in your browser's local storage — nothing is ever sent to a server.
+- **Multi-project management** — Create, rename, and delete multiple Markdown projects. All data persists in your browser's local storage — nothing is ever sent to a server.
 - **Rich Markdown toolbar** — Insert headings (H1–H6), bold, italic, strikethrough, links, unordered/ordered lists, blockquotes, code blocks, images, and tables with a single click.
-- **Command palette (Ctrl/Cmd + K)** — Quick access to all commands: new README, open file, toggle theme, toggle outline, and more.
+- **Command palette (Ctrl/Cmd + K)** — Quick access to all commands: new Markdown, open file, toggle theme, toggle outline, and more.
 - **Document outline** — Automatically generates a clickable table of contents from your Markdown headings for quick navigation.
 - **Dark & light themes** — Switch between light and dark mode; preference is saved locally.
 - **Import & export** — Open existing `.md` files from your computer or download your work as a `.md` file.
@@ -35,7 +35,6 @@ A modern, browser-based Markdown editor built specifically for creating and edit
 | Syntax highlighting | highlight.js |
 | Styling | Tailwind CSS 4 + `@tailwindcss/typography` |
 | Animations | Framer Motion |
-| Icons | Phosphor Icons |
 | HTML sanitization | DOMPurify |
 | Panels | react-resizable-panels |
 
@@ -46,7 +45,7 @@ A modern, browser-based Markdown editor built specifically for creating and edit
 ### Prerequisites
 
 - Node.js >= 18
-- npm or yarn
+- pnpm (recommended) or npm
 
 ### Installation
 
@@ -56,13 +55,13 @@ git clone https://github.com/charlzx/readme-editor.git
 cd readme-editor
 
 # Install dependencies
-npm install
+pnpm install
 ```
 
 ### Development
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Opens the app in development mode with hot module replacement (HMR). Visit `http://localhost:5173` in your browser.
@@ -70,7 +69,7 @@ Opens the app in development mode with hot module replacement (HMR). Visit `http
 ### Build
 
 ```bash
-npm run build
+pnpm build
 ```
 
 Compiles TypeScript and builds the production bundle to the `dist/` directory.
@@ -78,13 +77,13 @@ Compiles TypeScript and builds the production bundle to the `dist/` directory.
 ### Preview production build
 
 ```bash
-npm run preview
+pnpm preview
 ```
 
 ### Lint
 
 ```bash
-npm run lint
+pnpm lint
 ```
 
 Runs ESLint on the codebase.
@@ -94,11 +93,12 @@ Runs ESLint on the codebase.
 ## Project Structure
 
 ```
-readme-editor/
+markdown-editor/
 ├── src/
 │   ├── App.tsx          # Main application component
 │   ├── main.tsx         # Entry point with screen guard
 │   └── index.css        # Tailwind CSS + custom theme variables
+├── public/              # Favicon and static assets
 ├── index.html           # HTML shell
 ├── package.json         # Dependencies and scripts
 ├── vite.config.ts       # Vite configuration
@@ -110,9 +110,9 @@ readme-editor/
 
 ## Usage Guide
 
-### Creating a README
+### Creating a Markdown Project
 
-Click **New README** on the home screen or use the command palette (`Ctrl/Cmd + K` → "New README").
+Click **New blank Markdown** on the home screen or use the command palette (`Ctrl/Cmd + K` → "New Markdown").
 
 ### Editing
 
@@ -128,7 +128,7 @@ Click **Open file** or use the command palette to open an existing `.md` file fr
 
 ### Exporting
 
-Click the download button in the toolbar to save your README as a `.md` file.
+Click the download button in the toolbar to save your Markdown project as a `.md` file.
 
 ### Keyboard shortcuts
 
@@ -155,4 +155,5 @@ The editor requires a modern browser with support for:
 Works best on Chrome, Firefox, Safari, and Edge on desktop or tablet landscape. Mobile screens are not supported due to the split-pane layout — a friendly "Desktop Required" message is shown on small screens.
 
 ---
+
 Built by [Charlz](https://charlz.dev)
