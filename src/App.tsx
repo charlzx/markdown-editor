@@ -50,7 +50,7 @@ import {
 } from '@phosphor-icons/react';
 import type { Monaco } from '@monaco-editor/react';
 import type { editor as MonacoEditorTypes } from 'monaco-editor';
-import { marked } from 'marked';
+import { Marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import DOMPurify from 'dompurify';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -109,12 +109,14 @@ const ACTIVE_PROJECT_KEY = 'readme-editor-active-project';
 const LEGACY_CONTENT_KEY = 'readme-editor-content';
 const THEME_KEY = 'readme-editor-theme';
 
-marked.use(markedHighlight({
-    highlight(code, lang) {
-        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-        return hljs.highlight(code, { language }).value;
-    },
-}));
+const markedInstance = new Marked(
+    markedHighlight({
+        highlight(code, lang) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+        },
+    })
+);
 
 const DEFAULT_MARKDOWN = '';
 
@@ -629,7 +631,7 @@ const App: FC = () => {
     useEffect(() => {
         const renderMarkdown = async () => {
             if (!previewRef.current) return;
-            const parsed = await marked.parse(markdown);
+            const parsed = await markedInstance.parse(markdown);
             previewRef.current.innerHTML = DOMPurify.sanitize(parsed);
         };
         renderMarkdown();
