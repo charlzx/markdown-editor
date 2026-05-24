@@ -551,7 +551,7 @@ const App: FC = () => {
     const [activeLine, setActiveLine] = useState(1);
     const [clock, setClock] = useState(() => Date.now());
     const [toast, setToast] = useState({ show: false, message: '' });
-    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+    const [isScrollSyncEnabled, setIsScrollSyncEnabled] = useState(true);
     const [isToolbarVisible, setIsToolbarVisible] = useState(true);
 
     const editorRef = useRef<EditorInstance | null>(null);
@@ -1003,7 +1003,7 @@ const App: FC = () => {
         }
 
         editor.onDidScrollChange(event => {
-            if (isScrolling.current || !event.scrollTopChanged) return;
+            if (!isScrollSyncEnabled || isScrolling.current || !event.scrollTopChanged) return;
             setActiveLine(editor.getVisibleRanges()[0]?.startLineNumber ?? editor.getPosition()?.lineNumber ?? 1);
             const editorScrollHeight = editor.getScrollHeight();
             const editorVisibleHeight = editor.getLayoutInfo().height;
@@ -1018,6 +1018,26 @@ const App: FC = () => {
             }
         });
     };
+
+    const handlePreviewScroll = useCallback(() => {
+        if (!isScrollSyncEnabled || isScrolling.current || !editorRef.current || !previewRef.current) return;
+
+        const preview = previewRef.current;
+        const editor = editorRef.current;
+
+        const previewScrollHeight = preview.scrollHeight - preview.clientHeight;
+        if (previewScrollHeight <= 0) return;
+
+        const scrollRatio = preview.scrollTop / previewScrollHeight;
+        const editorScrollHeight = editor.getScrollHeight() - editor.getLayoutInfo().height;
+
+        isScrolling.current = true;
+        editor.setScrollTop(scrollRatio * editorScrollHeight);
+
+        window.setTimeout(() => {
+            isScrolling.current = false;
+        }, 100);
+    }, [isScrollSyncEnabled]);
 
     const jumpToOutlineItem = (item: OutlineItem) => {
         const editor = editorRef.current;
@@ -1385,6 +1405,13 @@ const App: FC = () => {
                                                 >
                                                     <Clock3 size={18} />
                                                 </button>
+                                                <button
+                                                    onClick={() => setIsScrollSyncEnabled(prev => !prev)}
+                                                    title={isScrollSyncEnabled ? 'Disable Scroll Sync' : 'Enable Scroll Sync'}
+                                                    className={`icon-btn ${isScrollSyncEnabled ? 'text-accent bg-accent/10 border border-accent/20' : 'text-muted-foreground'}`}
+                                                >
+                                                    <Link size={18} />
+                                                </button>
                                                 <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
                                                 <div className="flex items-center gap-1">
                                                     {toolbarItems.map(item => {
@@ -1582,6 +1609,7 @@ const App: FC = () => {
                                         </div>
                                         <div
                                             ref={previewRef}
+                                            onScroll={handlePreviewScroll}
                                             className="markdown-preview prose max-w-none flex-1 overflow-y-auto p-8 dark:prose-invert"
                                             role="region"
                                             aria-label="Markdown preview"
