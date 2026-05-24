@@ -409,7 +409,13 @@ const HoverDropdownMenu: FC<{ triggerIcon: ReactNode; label: string; children: R
     const [isOpen, setIsOpen] = useState(false);
     return (
         <div className="relative" onMouseEnter={() => setIsOpen(true)} onMouseLeave={() => setIsOpen(false)}>
-            <button title={label} className="icon-btn">{triggerIcon}</button>
+            <button
+                onClick={() => setIsOpen(prev => !prev)}
+                title={label}
+                className="icon-btn"
+            >
+                {triggerIcon}
+            </button>
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -417,6 +423,7 @@ const HoverDropdownMenu: FC<{ triggerIcon: ReactNode; label: string; children: R
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -4 }}
                         className={`absolute z-50 min-w-48 overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-sm ${side === 'right' ? 'left-full top-0 ml-2' : 'left-0 top-full mt-2'}`}
+                        onClick={() => setIsOpen(false)}
                     >
                         {children}
                     </motion.div>
