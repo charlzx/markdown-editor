@@ -15,7 +15,6 @@ import {
     ArrowLeftIcon as ArrowLeft,
     ArrowsInIcon as Minimize,
     ArrowsOutIcon as Maximize,
-    BracketsCurlyIcon as Code,
     CheckIcon as Check,
     ClockIcon as Clock3,
     CodeBlockIcon as Code2,
@@ -346,35 +345,7 @@ const TableModal: FC<{
     );
 };
 
-const ConfirmModal: FC<{
-    project: ReadmeProject | null;
-    onCancel: () => void;
-    onConfirm: () => void;
-}> = ({ project, onCancel, onConfirm }) => (
-    <AnimatePresence>
-        {project && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm" onClick={onCancel}>
-                <motion.div
-                    className="w-full max-w-sm rounded-lg border border-border bg-card p-5 text-card-foreground shadow-sm"
-                    onClick={event => event.stopPropagation()}
-                    initial={{ opacity: 0, scale: 0.98, y: 8 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.98, y: 8 }}
-                    transition={{ duration: 0.16, ease: 'easeOut' }}
-                >
-                    <h3 className="text-base font-semibold">Delete project</h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        This will remove <span className="font-medium text-foreground">{project.name}</span> from local storage.
-                    </p>
-                    <div className="mt-5 flex justify-end gap-2">
-                        <button onClick={onCancel} className="btn btn-secondary">Cancel</button>
-                        <button onClick={onConfirm} className="btn bg-destructive text-white hover:opacity-90">Delete</button>
-                    </div>
-                </motion.div>
-            </div>
-        )}
-    </AnimatePresence>
-);
+
 
 const CommandPalette: FC<{ isOpen: boolean; onClose: () => void; commands: Command[] }> = ({ isOpen, onClose, commands }) => {
     const [search, setSearch] = useState('');
@@ -529,7 +500,6 @@ const App: FC = () => {
     const [projectSearch, setProjectSearch] = useState('');
     const [activeLine, setActiveLine] = useState(1);
     const [clock, setClock] = useState(() => Date.now());
-    const [pendingDeleteProject, setPendingDeleteProject] = useState<ReadmeProject | null>(null);
     const [toast, setToast] = useState({ show: false, message: '' });
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -676,21 +646,7 @@ const App: FC = () => {
         showToast('Project created');
     };
 
-    const requestDeleteProject = (projectId: string) => {
-        const project = projects.find(item => item.id === projectId);
-        if (project) setPendingDeleteProject(project);
-    };
 
-    const confirmDeleteProject = () => {
-        if (!pendingDeleteProject) return;
-        setProjects(current => current.filter(item => item.id !== pendingDeleteProject.id));
-        if (activeProjectId === pendingDeleteProject.id) {
-            setActiveProjectId(null);
-            setView('home');
-        }
-        setPendingDeleteProject(null);
-        showToast('Project deleted');
-    };
 
     const handleDuplicateProject = (project: ReadmeProject) => {
         const duplicate = createProject(`${project.name} copy`, project.markdown);
@@ -861,7 +817,6 @@ const App: FC = () => {
             <input type="file" ref={imageInputRef} onChange={event => handleImageUpload(event.target.files?.[0])} className="hidden" accept="image/*" />
             <Toast message={toast.message} show={toast.show} />
             <TableModal isOpen={isTableModalOpen} onClose={() => setTableModalOpen(false)} onInsert={({ rows, cols }) => insertTableMarkdown(editorRef.current, { rows, cols })} />
-            <ConfirmModal project={pendingDeleteProject} onCancel={() => setPendingDeleteProject(null)} onConfirm={confirmDeleteProject} />
             <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} commands={commands} />
 
             {view === 'home' && (
