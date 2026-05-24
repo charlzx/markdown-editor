@@ -2,7 +2,7 @@
 
 A modern, browser-based Markdown editor built specifically for creating and editing professional Markdown files. Features a split-pane interface with a code editor, live preview, document outline, and full project management — all running locally in your browser.
 
-**Live Demo:** [readme.charlz.dev](https://readme.charlz.dev)
+**Live Demo:** [markdown.charlz.dev](https://markdown.charlz.dev)
 
 ---
 
