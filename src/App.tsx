@@ -1083,21 +1083,18 @@ const App: FC = () => {
                                 </button>
                                 <button onClick={handleCopy} className="icon-btn" title="Copy markdown"><Copy size={17} /></button>
                                 <button onClick={handleDownload} className="btn btn-primary h-8 px-3 gap-2 font-medium"><FileDown size={15} /> Download</button>
-                                <button onClick={() => requestDeleteProject(activeProject.id)} className="icon-btn text-destructive" title="Delete project"><Trash2 size={17} /></button>
                             </div>
                         </div>
                     </header>
-
+ 
                     <main className="min-h-0 flex-1 overflow-hidden">
                         <PanelGroup direction="horizontal">
                             <Panel defaultSize={50} minSize={isZenMode ? 100 : 24}>
                                 <div className="relative flex h-full flex-col bg-background">
-                                    <div className="absolute bottom-3 left-3 top-3 z-40 flex w-14 flex-col rounded-lg border border-border bg-card/95 p-1.5 text-muted-foreground shadow-sm backdrop-blur">
-                                        <div className="flex flex-col gap-1">
-                                            <button onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')} title="Toggle theme" className="icon-btn">{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button>
-                                            <button onClick={() => setIsZenMode(!isZenMode)} title={isZenMode ? 'Exit fullscreen' : 'Enter fullscreen'} className="icon-btn">{isZenMode ? <Minimize size={18} /> : <Maximize size={18} />}</button>
-                                        </div>
-                                        <div className="my-1.5 border-t border-border" />
+                                    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 rounded-lg border border-border bg-card/95 p-1.5 text-muted-foreground shadow-sm backdrop-blur max-w-[90%] overflow-x-auto">
+                                        <button onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')} title="Toggle theme" className="icon-btn">{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button>
+                                        <button onClick={() => setIsZenMode(!isZenMode)} title={isZenMode ? 'Exit fullscreen' : 'Enter fullscreen'} className="icon-btn">{isZenMode ? <Minimize size={18} /> : <Maximize size={18} />}</button>
+                                        <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
                                         <button
                                             onClick={() => setIsOutlineOpen(value => !value)}
                                             title="Markdown outline"
@@ -1105,13 +1102,13 @@ const App: FC = () => {
                                         >
                                             <Outline size={18} />
                                         </button>
-                                        <div className="my-1.5 border-t border-border" />
-                                        <div className="toolbar-scroll min-h-0 flex-1 space-y-1 overflow-y-auto pr-1.5">
+                                        <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
+                                        <div className="flex items-center gap-1">
                                             {toolbarItems.map(item => {
-                                                if (item.type === 'divider') return <div key={item.id} className="my-1.5 border-t border-border" />;
+                                                if (item.type === 'divider') return <div key={item.id} className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />;
                                                 if (item.type === 'dropdown') {
                                                     return (
-                                                        <HoverDropdownMenu key={item.id} triggerIcon={item.icon} label={item.label || ''} side="right">
+                                                        <HoverDropdownMenu key={item.id} triggerIcon={item.icon} label={item.label || ''} side="bottom">
                                                             {item.items?.map(sub => (
                                                                 <button key={sub.label} onClick={sub.action} className="dropdown-item">{sub.label}</button>
                                                             ))}
@@ -1121,13 +1118,13 @@ const App: FC = () => {
                                                 return <button key={item.id} onClick={item.action} title={item.label} className="icon-btn">{item.icon}</button>;
                                             })}
                                         </div>
-                                        <div className="my-1.5 border-t border-border" />
+                                        <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
                                         <button onClick={() => openFileInputRef.current?.click()} className="icon-btn" title="Open file"><Upload size={18} /></button>
                                     </div>
                                     <AnimatePresence>
                                         {isOutlineOpen && (
                                             <motion.aside
-                                                className="absolute bottom-3 left-[4.25rem] top-3 z-30 flex w-72 flex-col rounded-lg border border-border bg-card/95 text-card-foreground shadow-sm backdrop-blur"
+                                                className="absolute bottom-3 left-3 top-3 z-30 flex w-72 flex-col rounded-lg border border-border bg-card/95 text-card-foreground shadow-sm backdrop-blur"
                                                 initial={{ opacity: 0, x: -8 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 exit={{ opacity: 0, x: -8 }}
@@ -1164,7 +1161,7 @@ const App: FC = () => {
                                             </motion.aside>
                                         )}
                                     </AnimatePresence>
-                                    <div className={`min-h-0 flex-1 overflow-hidden transition-[padding] ${isOutlineOpen ? 'pl-[22rem]' : 'pl-14'}`}>
+                                    <div className={`min-h-0 flex-1 overflow-hidden transition-[padding] ${isOutlineOpen ? 'pl-[19.5rem] pt-16' : 'pl-4 pt-16'}`}>
                                         <Suspense fallback={<div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading editor...</div>}>
                                             <MonacoEditor
                                                 height="100%"
@@ -1186,7 +1183,7 @@ const App: FC = () => {
                                         </Suspense>
                                     </div>
                                     {!isZenMode && (
-                                        <div className="flex flex-shrink-0 items-center gap-4 border-t border-border bg-muted/50 px-4 py-1.5 pl-16 text-xs text-muted-foreground">
+                                        <div className="flex flex-shrink-0 items-center gap-4 border-t border-border bg-muted/50 px-4 py-1.5 pl-4 text-xs text-muted-foreground">
                                             <span><Save size={13} className="mr-1 inline" /> Saved {savedLabel}</span>
                                             <span>Lines {stats.lines}</span>
                                             <span>Words {stats.words}</span>
