@@ -51,8 +51,8 @@ A modern, browser-based Markdown editor built specifically for creating and edit
 
 ```bash
 # Clone the repository
-git clone https://github.com/charlzx/readme-editor.git
-cd readme-editor
+git clone https://github.com/charlzx/markdown-editor.git
+cd markdown-editor
 
 # Install dependencies
 pnpm install
