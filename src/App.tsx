@@ -12,9 +12,11 @@ import React, {
 import {
     ArrowClockwiseIcon as Redo,
     ArrowCounterClockwiseIcon as Undo,
+    ArrowLeftIcon as ArrowLeft,
     ArrowsInIcon as Minimize,
     ArrowsOutIcon as Maximize,
     BracketsCurlyIcon as Code,
+    CheckIcon as Check,
     ClockIcon as Clock3,
     CodeBlockIcon as Code2,
     CopyIcon as Copy,
@@ -31,6 +33,7 @@ import {
     ListNumbersIcon as ListOrdered,
     MagnifyingGlassIcon as Search,
     MoonIcon as Moon,
+    PencilSimpleIcon as Pencil,
     PlusIcon as Plus,
     QuotesIcon as Quote,
     SidebarSimpleIcon as PanelRight,
@@ -452,6 +455,68 @@ const HoverDropdownMenu: FC<{ triggerIcon: ReactNode; label: string; children: R
     );
 };
 
+const ProjectNameEditor: FC<{
+    name: string;
+    onSave: (next: string) => void;
+}> = ({ name, onSave }) => {
+    const [editing, setEditing] = useState(false);
+    const [draft, setDraft] = useState(name);
+    const inputRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+        if (editing) {
+            setDraft(name);
+            window.setTimeout(() => inputRef.current?.select(), 0);
+        }
+    }, [editing, name]);
+
+    const commit = () => {
+        const trimmed = draft.trim();
+        if (trimmed && trimmed !== name) onSave(trimmed);
+        setEditing(false);
+    };
+
+    const cancel = () => {
+        setDraft(name);
+        setEditing(false);
+    };
+
+    if (editing) {
+        return (
+            <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                <input
+                    ref={inputRef}
+                    value={draft}
+                    onChange={e => setDraft(e.target.value)}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter') commit();
+                        if (e.key === 'Escape') cancel();
+                    }}
+                    className="h-8 rounded-md border border-border bg-muted/40 px-2 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 w-48 transition-all font-sans"
+                    aria-label="Project name"
+                />
+                <button onClick={commit} className="p-1 rounded hover:bg-muted text-accent" aria-label="Save name">
+                    <Check size={16} />
+                </button>
+                <button onClick={cancel} className="p-1 rounded hover:bg-muted text-muted-foreground" aria-label="Cancel">
+                    <Close size={16} />
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <button
+            onClick={() => setEditing(true)}
+            className="group flex items-center gap-1.5 rounded-md px-1 py-0.5 hover:bg-muted/50 transition-colors text-left"
+            aria-label="Edit project name"
+        >
+            <span className="text-base font-semibold tracking-tight">{name}</span>
+            <Pencil size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+        </button>
+    );
+};
+
 const App: FC = () => {
     const [projects, setProjects] = useState<ReadmeProject[]>(loadProjects);
     const [activeProjectId, setActiveProjectId] = useState<string | null>(() => localStorage.getItem(ACTIVE_PROJECT_KEY));
@@ -466,6 +531,7 @@ const App: FC = () => {
     const [clock, setClock] = useState(() => Date.now());
     const [pendingDeleteProject, setPendingDeleteProject] = useState<ReadmeProject | null>(null);
     const [toast, setToast] = useState({ show: false, message: '' });
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     const editorRef = useRef<EditorInstance | null>(null);
     const monacoRef = useRef<MonacoInstance | null>(null);
@@ -931,24 +997,52 @@ const App: FC = () => {
                                                             {formatRelativeTime(project.updatedAt, clock)}
                                                         </span>
 
-                                                        <div className="flex items-center gap-2 min-w-[100px] justify-end">
-                                                            <button
-                                                                onClick={() => handleDuplicateProject(project)}
-                                                                className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-muted text-muted-foreground"
-                                                                title="Duplicate project"
-                                                            >
-                                                                <Copy size={15} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => requestDeleteProject(project.id)}
-                                                                className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
-                                                                title="Delete project"
-                                                            >
-                                                                <Trash2 size={15} />
-                                                            </button>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors hidden sm:block">
-                                                                <path d="m9 18 6-6-6-6"/>
-                                                            </svg>
+                                                        <div className="flex items-center gap-2 min-w-[110px] justify-end">
+                                                            {confirmDeleteId === project.id ? (
+                                                                <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2 py-1 z-10 shadow-sm animate-in fade-in zoom-in-95 duration-150">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setProjects(current => current.filter(item => item.id !== project.id));
+                                                                            if (activeProjectId === project.id) {
+                                                                                setActiveProjectId(null);
+                                                                                setView('home');
+                                                                            }
+                                                                            setConfirmDeleteId(null);
+                                                                            showToast('Project deleted');
+                                                                        }}
+                                                                        className="text-xs font-semibold text-destructive hover:underline"
+                                                                    >
+                                                                        Delete
+                                                                    </button>
+                                                                    <span className="text-muted-foreground text-xs">/</span>
+                                                                    <button
+                                                                        onClick={() => setConfirmDeleteId(null)}
+                                                                        className="text-xs font-medium text-muted-foreground hover:underline"
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => handleDuplicateProject(project)}
+                                                                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-muted text-muted-foreground"
+                                                                        title="Duplicate project"
+                                                                    >
+                                                                        <Copy size={15} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setConfirmDeleteId(project.id)}
+                                                                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
+                                                                        title="Delete project"
+                                                                    >
+                                                                        <Trash2 size={15} />
+                                                                    </button>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors hidden sm:block">
+                                                                        <path d="m9 18 6-6-6-6"/>
+                                                                    </svg>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -964,30 +1058,31 @@ const App: FC = () => {
 
             {view === 'editor' && activeProject && (
                 <div className="flex h-screen flex-col overflow-hidden">
-                    <header className={`flex-shrink-0 border-b border-border bg-card/95 px-3 py-2 backdrop-blur ${isZenMode ? 'hidden' : 'block'}`}>
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex min-w-0 items-center gap-2">
-                                <button onClick={() => setView('home')} className="icon-btn" title="Home">
-                                    <Home size={18} />
+                    <header className={`flex-shrink-0 border-b border-border bg-background/80 px-6 py-3 backdrop-blur-md ${isZenMode ? 'hidden' : 'block'}`}>
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <button
+                                    onClick={() => setView('home')}
+                                    className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-sm shrink-0"
+                                    aria-label="Back to projects"
+                                >
+                                    <ArrowLeft size={16} />
+                                    <span className="hidden sm:inline">Projects</span>
                                 </button>
-                                <div className="grid size-9 place-items-center rounded-md bg-primary text-primary-foreground">
-                                    <Code size={19} />
-                                </div>
-                                <input
-                                    value={activeProject.name}
-                                    onChange={event => updateActiveProject({ name: event.target.value })}
-                                    className="min-w-0 max-w-[52vw] rounded-md border border-transparent bg-transparent px-2 py-1 text-base font-semibold outline-none hover:border-border focus:border-ring focus:bg-background"
-                                    aria-label="Project name"
+                                <span className="text-muted-foreground/40 shrink-0">/</span>
+                                <ProjectNameEditor
+                                    name={activeProject.name}
+                                    onSave={newName => updateActiveProject({ name: newName })}
                                 />
                             </div>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => setIsCommandPaletteOpen(true)} className="btn btn-secondary">
-                                    <Search size={15} />
+                                <button onClick={() => setIsCommandPaletteOpen(true)} className="btn btn-secondary h-8 px-3 gap-2">
+                                    <Search size={14} />
                                     <span className="hidden sm:inline">Search</span>
-                                    <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground">Ctrl K</kbd>
+                                    <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground font-mono">Ctrl K</kbd>
                                 </button>
                                 <button onClick={handleCopy} className="icon-btn" title="Copy markdown"><Copy size={17} /></button>
-                                <button onClick={handleDownload} className="btn btn-primary"><FileDown size={16} /> Download</button>
+                                <button onClick={handleDownload} className="btn btn-primary h-8 px-3 gap-2 font-medium"><FileDown size={15} /> Download</button>
                                 <button onClick={() => requestDeleteProject(activeProject.id)} className="icon-btn text-destructive" title="Delete project"><Trash2 size={17} /></button>
                             </div>
                         </div>
