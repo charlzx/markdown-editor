@@ -1252,14 +1252,14 @@ const App: FC = () => {
                                                                 <>
                                                                     <button
                                                                         onClick={() => handleDuplicateProject(project)}
-                                                                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-muted text-muted-foreground"
+                                                                        className="p-1.5 rounded-md hover:bg-muted text-muted-foreground transition-colors"
                                                                         title="Duplicate project"
                                                                     >
                                                                         <Copy size={15} />
                                                                     </button>
                                                                     <button
                                                                         onClick={() => setConfirmDeleteId(project.id)}
-                                                                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground"
+                                                                        className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
                                                                         title="Delete project"
                                                                     >
                                                                         <Trash2 size={15} />
@@ -1317,7 +1317,7 @@ const App: FC = () => {
                         <PanelGroup direction="horizontal">
                             <Panel defaultSize={50} minSize={isZenMode ? 100 : 24}>
                                 <div className="relative flex h-full flex-col bg-background">
-                                    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 rounded-lg border border-border bg-card/95 p-1.5 text-muted-foreground shadow-sm backdrop-blur max-w-[90%] overflow-visible">
+                                    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 flex flex-wrap items-center justify-center gap-1 rounded-lg border border-border bg-card/95 p-1.5 text-muted-foreground shadow-sm backdrop-blur max-w-[90%] overflow-visible">
                                         <button onClick={() => setTheme(value => value === 'light' ? 'dark' : 'light')} title="Toggle theme" className="icon-btn">{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button>
                                         <button onClick={() => setIsZenMode(!isZenMode)} title={isZenMode ? 'Exit fullscreen' : 'Enter fullscreen'} className="icon-btn">{isZenMode ? <Minimize size={18} /> : <Maximize size={18} />}</button>
                                         <div className="mx-1.5 h-4 w-[1px] bg-border shrink-0" />
