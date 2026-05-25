@@ -746,7 +746,10 @@ const App: FC = () => {
         }
 
         // Notion-style slash commands completion provider registration
-        if (monaco && !completionProviderRef.current) {
+        if (monaco) {
+            if (completionProviderRef.current) {
+                completionProviderRef.current.dispose();
+            }
             completionProviderRef.current = monaco.languages.registerCompletionItemProvider('markdown', {
                 triggerCharacters: ['/'],
                 provideCompletionItems: (model: any, position: any) => {
