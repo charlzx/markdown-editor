@@ -753,7 +753,7 @@ const App: FC = () => {
                     const lineContent = model.getLineContent(position.lineNumber);
 
                     // Only trigger slash commands if / is at the start of a line (with optional spaces)
-                    const textBeforeSlash = lineContent.substring(0, position.column - 1);
+                    const textBeforeSlash = lineContent.substring(0, position.column - 2);
                     if (textBeforeSlash.trim() !== '') {
                         return { suggestions: [] };
                     }
