@@ -381,6 +381,13 @@ const App: FC = () => {
                     previewRef.current.innerHTML = `<div class="p-4 text-destructive bg-destructive/10 border border-destructive/20 rounded-md font-mono text-sm">${error}</div>`;
                 } else {
                     previewRef.current.innerHTML = DOMPurify.sanitize(compiledHtml);
+                    
+                    // Enable checkboxes inside the preview to make them interactive
+                    const checkboxes = previewRef.current.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(cb => {
+                        cb.removeAttribute('disabled');
+                        cb.classList.add('cursor-pointer', 'accent-accent', 'transition-all');
+                    });
                 }
             }
         });
@@ -789,6 +796,59 @@ const App: FC = () => {
             isScrolling.current = false;
         }, 100);
     }, [isScrollSyncEnabled]);
+
+    const toggleMarkdownCheckbox = useCallback((targetIndex: number) => {
+        const editor = editorRef.current;
+        if (!editor || !monacoRef.current) return;
+
+        const model = editor.getModel();
+        if (!model) return;
+
+        const lines = model.getLinesContent();
+        let checkboxCount = 0;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const match = line.match(/^(\s*([-*+]|\d+\.)\s+\[)([ xX])(\])/);
+            if (match) {
+                if (checkboxCount === targetIndex) {
+                    const currentChar = match[3];
+                    const newChar = currentChar === ' ' ? 'x' : ' ';
+                    
+                    const startCol = match[1].length + 1;
+                    const endCol = startCol + 1;
+                    
+                    const range = new monacoRef.current.Range(i + 1, startCol, i + 1, endCol);
+                    
+                    editor.executeEdits('checkbox-toggle', [{
+                        range,
+                        text: newChar
+                    }]);
+                    
+                    showToast(newChar === 'x' ? 'Task completed' : 'Task incomplete');
+                    break;
+                }
+                checkboxCount++;
+            }
+        }
+    }, [showToast]);
+
+    const handlePreviewClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+        const target = event.target as HTMLElement;
+        if (target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'checkbox') {
+            const checkbox = target as HTMLInputElement;
+            const preview = previewRef.current;
+            if (!preview) return;
+
+            const checkboxes = Array.from(preview.querySelectorAll('input[type="checkbox"]'));
+            const index = checkboxes.indexOf(checkbox);
+            if (index !== -1) {
+                // Prevent native checkbox state toggle since we handle it in editor markdown
+                event.preventDefault();
+                toggleMarkdownCheckbox(index);
+            }
+        }
+    }, [toggleMarkdownCheckbox]);
 
     const jumpToOutlineItem = (item: OutlineItem) => {
         const editor = editorRef.current;
@@ -1290,6 +1350,7 @@ const App: FC = () => {
                                         <div
                                             ref={previewRef}
                                             onScroll={handlePreviewScroll}
+                                            onClick={handlePreviewClick}
                                             className="markdown-preview prose max-w-none flex-1 overflow-y-auto p-8 dark:prose-invert"
                                             role="region"
                                             aria-label="Markdown preview"
