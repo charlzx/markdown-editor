@@ -312,7 +312,6 @@ const App: FC = () => {
     const imageInputRef = useRef<HTMLInputElement | null>(null);
     const decorationsRef = useRef<string[]>([]);
     const isScrolling = useRef(false);
-    const completionProviderRef = useRef<any>(null);
     const lastAutoCheckpointRef = useRef<string>('');
 
     const activeProject = useMemo(
@@ -364,14 +363,6 @@ const App: FC = () => {
         document.documentElement.classList.toggle('dark', theme === 'dark');
     }, [theme]);
 
-    useEffect(() => {
-        return () => {
-            if (completionProviderRef.current) {
-                completionProviderRef.current.dispose();
-                completionProviderRef.current = null;
-            }
-        };
-    }, []);
 
     useEffect(() => {
         if (!previewRef.current) return;
@@ -745,137 +736,7 @@ const App: FC = () => {
             }, true);
         }
 
-        // Notion-style slash commands completion provider registration
-        if (monaco) {
-            if (completionProviderRef.current) {
-                completionProviderRef.current.dispose();
-            }
-            completionProviderRef.current = monaco.languages.registerCompletionItemProvider('markdown', {
-                triggerCharacters: ['/'],
-                provideCompletionItems: (model: any, position: any) => {
-                    const lineContent = model.getLineContent(position.lineNumber);
 
-                    // Only trigger slash commands if / is at the start of a line (with optional spaces)
-                    const textBeforeSlash = lineContent.substring(0, position.column - 2);
-                    if (textBeforeSlash.trim() !== '') {
-                        return { suggestions: [] };
-                    }
-
-                    const range = {
-                        startLineNumber: position.lineNumber,
-                        startColumn: position.column - 1, // cover the '/' character
-                        endLineNumber: position.lineNumber,
-                        endColumn: position.column
-                    };
-
-                    const suggestions = [
-                        {
-                            label: 'Heading 1',
-                            kind: monaco.languages.CompletionItemKind.Function,
-                            insertText: '# ',
-                            detail: 'Insert H1 header',
-                            documentation: 'Creates a large section heading',
-                            range
-                        },
-                        {
-                            label: 'Heading 2',
-                            kind: monaco.languages.CompletionItemKind.Function,
-                            insertText: '## ',
-                            detail: 'Insert H2 header',
-                            documentation: 'Creates a medium section heading',
-                            range
-                        },
-                        {
-                            label: 'Heading 3',
-                            kind: monaco.languages.CompletionItemKind.Function,
-                            insertText: '### ',
-                            detail: 'Insert H3 header',
-                            documentation: 'Creates a small section heading',
-                            range
-                        },
-                        {
-                            label: 'Bullet List',
-                            kind: monaco.languages.CompletionItemKind.Function,
-                            insertText: '- ',
-                            detail: 'Insert unordered list item',
-                            documentation: 'Creates a bulleted list',
-                            range
-                        },
-                        {
-                            label: 'Numbered List',
-                            kind: monaco.languages.CompletionItemKind.Function,
-                            insertText: '1. ',
-                            detail: 'Insert ordered list item',
-                            documentation: 'Creates a numbered list',
-                            range
-                        },
-                        {
-                            label: 'Blockquote',
-                            kind: monaco.languages.CompletionItemKind.Function,
-                            insertText: '> ',
-                            detail: 'Insert blockquote text block',
-                            documentation: 'Creates a citations blockquote block',
-                            range
-                        },
-                        {
-                            label: 'Code Block',
-                            kind: monaco.languages.CompletionItemKind.Snippet,
-                            insertText: '```\n$0\n```',
-                            detail: 'Insert code block',
-                            documentation: 'Creates a syntax highlighted code snippet',
-                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                            range
-                        },
-                        {
-                            label: 'Table',
-                            kind: monaco.languages.CompletionItemKind.Snippet,
-                            insertText: '| Header 1 | Header 2 |\n| -------- | -------- |\n| Cell 1   | Cell 2   |',
-                            detail: 'Insert markdown table',
-                            documentation: 'Creates a 2x2 grid data table',
-                            range
-                        },
-                        {
-                            label: 'Bold Text',
-                            kind: monaco.languages.CompletionItemKind.Function,
-                            insertText: '**$0**',
-                            detail: 'Insert bold markup',
-                            documentation: 'Emphasis strong styled text',
-                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                            range
-                        },
-                        {
-                            label: 'Italic Text',
-                            kind: monaco.languages.CompletionItemKind.Function,
-                            insertText: '*$0*',
-                            detail: 'Insert italic markup',
-                            documentation: 'Emphasis italic styled text',
-                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                            range
-                        },
-                        {
-                            label: 'Image Link',
-                            kind: monaco.languages.CompletionItemKind.Snippet,
-                            insertText: '![alt text]($0)',
-                            detail: 'Insert image markup',
-                            documentation: 'Embeds an image using a URL link',
-                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                            range
-                        },
-                        {
-                            label: 'Hyperlink',
-                            kind: monaco.languages.CompletionItemKind.Snippet,
-                            insertText: '[link text]($0)',
-                            detail: 'Insert link markup',
-                            documentation: 'Creates a clickable text hyperlink',
-                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                            range
-                        }
-                    ];
-
-                    return { suggestions };
-                }
-            });
-        }
 
         editor.onDidScrollChange(event => {
             if (!isScrollSyncEnabled || isScrolling.current || !event.scrollTopChanged) return;
