@@ -611,18 +611,99 @@ const App: FC = () => {
         event.target.value = '';
     };
 
-    const handleImageUpload = (file: File | undefined) => {
-        if (!file?.type.startsWith('image/')) return;
-        const reader = new FileReader();
-        reader.onload = event => {
-            const base64Image = event.target?.result;
-            if (typeof base64Image !== 'string' || !editorRef.current) return;
-            const selection = editorRef.current.getSelection();
-            if (selection) {
-                editorRef.current.executeEdits('image-upload', [{ range: selection, text: `![${file.name}](${base64Image})` }]);
+    const uploadToCatbox = async (file: File): Promise<string> => {
+        const formData = new FormData();
+        formData.append('reqtype', 'fileupload');
+        formData.append('fileToUpload', file);
+
+        const response = await fetch('https://catbox.moe/user/api.php', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error('Upload failed');
+        }
+
+        const url = await response.text();
+        return url.trim();
+    };
+
+    const handleImageUpload = async (file: File | undefined) => {
+        if (!file) return;
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+        if (!isImage && !isVideo) {
+            showToast('Supported files: Images and Videos');
+            return;
+        }
+
+        const editor = editorRef.current;
+        if (!editor || !monacoRef.current) return;
+
+        const selection = editor.getSelection();
+        if (!selection) return;
+
+        showToast('Uploading asset to cloud...');
+
+        try {
+            // 1. Try uploading to Catbox first for a lightweight direct HTTPS URL
+            const url = await uploadToCatbox(file);
+            
+            let textToInsert = '';
+            if (isImage) {
+                textToInsert = `![${file.name}](${url})`;
+            } else {
+                textToInsert = `<video src="${url}" controls class="my-4 max-w-full rounded-lg shadow-sm border border-border"></video>`;
             }
-        };
-        reader.readAsDataURL(file);
+
+            editor.executeEdits('image-upload', [{ range: selection, text: textToInsert }]);
+            showToast('Asset uploaded and inserted');
+        } catch (error) {
+            console.error('Cloud upload failed, falling back to local reference-style base64:', error);
+            showToast('Offline or upload failed. Using local reference...');
+
+            // 2. Fallback to reference-style Base64 definition at the bottom of the document
+            const reader = new FileReader();
+            reader.onload = event => {
+                const base64Data = event.target?.result;
+                if (typeof base64Data !== 'string') return;
+
+                const model = editor.getModel();
+                if (!model) return;
+
+                const lineCount = model.getLineCount();
+                const lastLineLen = model.getLineMaxColumn(lineCount);
+
+                const refId = `ref-${isImage ? 'img' : 'vid'}-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`;
+                
+                let inlineText = '';
+                let refDefinition = '';
+
+                if (isImage) {
+                    inlineText = `![${file.name}][${refId}]`;
+                    refDefinition = `\n\n[${refId}]: ${base64Data}`;
+                } else {
+                    inlineText = `<video src="[${refId}]" controls class="my-4 max-w-full rounded-lg shadow-sm border border-border"></video>`;
+                    refDefinition = `\n\n[${refId}]: ${base64Data}`;
+                }
+
+                // Insert inline reference at cursor and definition at the bottom of the file in one undo transaction
+                editor.executeEdits('image-upload-fallback', [
+                    {
+                        range: selection,
+                        text: inlineText
+                    },
+                    {
+                        range: new monacoRef.current.Range(lineCount, lastLineLen, lineCount, lastLineLen),
+                        text: refDefinition
+                    }
+                ]);
+
+                showToast('Local reference inserted at bottom of document');
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleEditorDidMount = (editor: EditorInstance, monaco: MonacoInstance) => {
@@ -630,6 +711,33 @@ const App: FC = () => {
         monacoRef.current = monaco;
         setActiveLine(editor.getPosition()?.lineNumber ?? 1);
         editor.onDidChangeCursorPosition(event => setActiveLine(event.position.lineNumber));
+
+        // Attach drag & drop / paste listeners for premium image/video imports
+        const domNode = editor.getDomNode();
+        if (domNode) {
+            domNode.addEventListener('drop', (event: DragEvent) => {
+                const file = event.dataTransfer?.files?.[0];
+                if (file) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const target = editor.getTargetAtClientPoint(event.clientX, event.clientY);
+                    if (target?.position) {
+                        editor.setPosition(target.position);
+                        editor.focus();
+                    }
+                    handleImageUpload(file);
+                }
+            }, true);
+
+            domNode.addEventListener('paste', (event: ClipboardEvent) => {
+                const file = event.clipboardData?.files?.[0];
+                if (file) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleImageUpload(file);
+                }
+            }, true);
+        }
 
         // Notion-style slash commands completion provider registration
         if (monaco && !completionProviderRef.current) {
@@ -943,7 +1051,7 @@ const App: FC = () => {
                 .scrollbar-thin { scrollbar-width: thin; scrollbar-color: hsl(var(--border)) transparent; }
             `}</style>
             <input type="file" ref={openFileInputRef} onChange={handleOpenFile} className="hidden" accept=".md,text/markdown" />
-            <input type="file" ref={imageInputRef} onChange={event => handleImageUpload(event.target.files?.[0])} className="hidden" accept="image/*" />
+            <input type="file" ref={imageInputRef} onChange={event => handleImageUpload(event.target.files?.[0])} className="hidden" accept="image/*,video/*" />
             <Toast message={toast.message} show={toast.show} />
             
             <TableModal isOpen={isTableModalOpen} onClose={() => setTableModalOpen(false)} onInsert={({ rows, cols }) => insertTableMarkdown(editorRef.current, { rows, cols })} />
