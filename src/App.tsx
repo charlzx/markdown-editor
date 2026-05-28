@@ -345,6 +345,33 @@ const App: FC = () => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
     }, [projects]);
 
+    // ── SEO & Page Metadata Management ────────────────────────────────────────
+    useEffect(() => {
+        let title = 'Markdown Editor';
+        let description = 'A modern, browser-based Markdown editor built for creating, editing, and previewing high-fidelity Markdown files fully offline and locally.';
+
+        if (view === 'home') {
+            title = 'Markdown Editor - Safe Local Document Writing & Formatting';
+            description = 'Your sandboxed offline environment to write, preview, outline, and format Markdown files with Monaco editor and local IndexedDB persistence.';
+        } else if (view === 'editor') {
+            const projName = activeProject ? activeProject.name : 'Document';
+            title = `Markdown Editor - ${projName}`;
+            description = `Create and edit your Markdown file "${projName}" in real time with resizable split-pane preview, table generator, outline, and document version history.`;
+        }
+
+        // Update document title
+        document.title = title;
+
+        // Update document meta description
+        let metaDescription = document.querySelector('meta[name="description"]');
+        if (!metaDescription) {
+            metaDescription = document.createElement('meta');
+            metaDescription.setAttribute('name', 'description');
+            document.head.appendChild(metaDescription);
+        }
+        metaDescription.setAttribute('content', description);
+    }, [view, activeProject]);
+
     useEffect(() => {
         const interval = window.setInterval(() => setClock(Date.now()), 15000);
         return () => window.clearInterval(interval);

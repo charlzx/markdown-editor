@@ -1,42 +1,31 @@
 # markdown-editor
 
-A modern, browser-based Markdown editor built specifically for creating and editing professional Markdown files. Features a split-pane interface with a code editor, live preview, document outline, and full project management — all running locally in your browser.
+A modern, browser-based Markdown editor built specifically for creating, editing, and previewing professional Markdown structures. Features a split-pane interface with a code editor, live rendering preview, document outline tracker, and full project management — all running locally in your browser.
 
 **Live Demo:** [markdown.charlz.dev](https://markdown.charlz.dev)
 
 ---
 
-## Features
+## Key Features
 
-- **Split-pane editor & preview** — Resizable panels with Monaco editor (the same engine powering VS Code) on the left and a live-rendered Markdown preview on the right.
-- **Multi-project management** — Create, rename, and delete multiple Markdown projects. All data persists in your browser's local storage — nothing is ever sent to a server.
-- **Rich Markdown toolbar** — Insert headings (H1–H6), bold, italic, strikethrough, links, unordered/ordered lists, blockquotes, code blocks, images, and tables with a single click.
-- **Command palette (Ctrl/Cmd + K)** — Quick access to all commands: new Markdown, open file, toggle theme, toggle outline, and more.
-- **Document outline** — Automatically generates a clickable table of contents from your Markdown headings for quick navigation.
-- **Dark & light themes** — Switch between light and dark mode; preference is saved locally.
-- **Import & export** — Open existing `.md` files from your computer or download your work as a `.md` file.
-- **Image embedding** — Paste or upload images directly into the editor as base64 data URIs (no external hosting required).
-- **Zen mode** — Distraction-free fullscreen preview.
-- **Undo / Redo** — Full undo/redo support within the editor.
-- **Code syntax highlighting** — Fenced code blocks are highlighted using highlight.js (GitHub Dark theme).
-- **Security** — Rendered HTML is sanitized with DOMPurify to prevent XSS attacks.
-- **Desktop-first design** — Optimized for tablet landscape, laptop, and desktop screens due to the split-pane layout.
+- **Split-Pane Workspace:** Monaco editor (powering VS Code) on the left, with real-time responsive split-pane rendering on the right.
+- **Dynamic Preview Outline:** Clicking headers in the automatically generated table of contents scrolls the editor directly to that section.
+- **Rich Format Toolbar:** One-click shortcuts for inserting headings, styling (bold, italics, strikethrough), tables, lists, quotes, and links.
+- **Asset Upload & Embedding:** Drag-and-drop or paste local images and videos directly into the editor for instant cloud uploading or base64 local embedding.
+- **Local Sandbox Storage:** Multi-project manager persisting files 100% locally in your browser profile's localStorage.
+- **Zen Mode & Command Palette:** Enter fullscreen Zen Mode to write distraction-free, or trigger commands instantly via `Ctrl/Cmd + K`.
+- **HTML Sanitization & Highlighting:** Pre-renders clean, DOMPurify-sanitized HTML outputs with highlight.js syntax styling.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | React 19 with TypeScript |
-| Build tool | Vite 7 |
-| Editor | Monaco Editor (`@monaco-editor/react`) |
-| Markdown parsing | Marked + marked-highlight |
-| Syntax highlighting | highlight.js |
-| Styling | Tailwind CSS 4 + `@tailwindcss/typography` |
-| Animations | Framer Motion |
-| HTML sanitization | DOMPurify |
-| Panels | react-resizable-panels |
+- **Framework:** React 19 + TypeScript + Vite 7
+- **Editor:** Monaco Editor (`@monaco-editor/react`)
+- **Markdown Parsing:** Marked + marked-highlight
+- **Syntax Highlighting:** highlight.js
+- **HTML Sanitization:** DOMPurify
+- **Styling & Layout:** Tailwind CSS 4 + `@tailwindcss/typography` + `react-resizable-panels`
 
 ---
 
@@ -45,9 +34,9 @@ A modern, browser-based Markdown editor built specifically for creating and edit
 ### Prerequisites
 
 - Node.js >= 18
-- pnpm (recommended) or npm
+- pnpm (recommended)
 
-### Installation
+### Setup
 
 ```bash
 # Clone the repository
@@ -56,103 +45,13 @@ cd markdown-editor
 
 # Install dependencies
 pnpm install
-```
 
-### Development
-
-```bash
+# Start local dev server
 pnpm dev
-```
 
-Opens the app in development mode with hot module replacement (HMR). Visit `http://localhost:5173` in your browser.
-
-### Build
-
-```bash
+# Build production assets
 pnpm build
 ```
-
-Compiles TypeScript and builds the production bundle to the `dist/` directory.
-
-### Preview production build
-
-```bash
-pnpm preview
-```
-
-### Lint
-
-```bash
-pnpm lint
-```
-
-Runs ESLint on the codebase.
-
----
-
-## Project Structure
-
-```
-markdown-editor/
-├── src/
-│   ├── App.tsx          # Main application component
-│   ├── main.tsx         # Entry point with screen guard
-│   └── index.css        # Tailwind CSS + custom theme variables
-├── public/              # Favicon and static assets
-├── index.html           # HTML shell
-├── package.json         # Dependencies and scripts
-├── vite.config.ts       # Vite configuration
-├── tsconfig.json        # TypeScript configuration
-└── eslint.config.js     # ESLint configuration
-```
-
----
-
-## Usage Guide
-
-### Creating a Markdown Project
-
-Click **New blank Markdown** on the home screen or use the command palette (`Ctrl/Cmd + K` → "New Markdown").
-
-### Editing
-
-Use the Monaco editor on the left to write Markdown. The toolbar provides quick-access buttons for common formatting. The preview on the right updates in real time.
-
-### Managing projects
-
-All projects are listed on the home screen, sorted by most recently updated. Use the search bar to filter projects. Click the trash icon to delete a project (with confirmation dialog).
-
-### Importing files
-
-Click **Open file** or use the command palette to open an existing `.md` file from your computer.
-
-### Exporting
-
-Click the download button in the toolbar to save your Markdown project as a `.md` file.
-
-### Keyboard shortcuts
-
-| Shortcut | Action |
-|---|---|
-| `Ctrl/Cmd + K` | Open command palette |
-| `Escape` | Close command palette or exit zen mode |
-
-### Outline panel
-
-Toggle the document outline to see a structured overview of all headings in your document. Click any heading to jump to that section in the editor.
-
----
-
-## Browser Support
-
-The editor requires a modern browser with support for:
-
-- Local Storage
-- FileReader API
-- ResizeObserver
-- CSS Grid & Custom Properties
-
-Works best on Chrome, Firefox, Safari, and Edge on desktop or tablet landscape. Mobile screens are not supported due to the split-pane layout — a friendly "Desktop Required" message is shown on small screens.
 
 ---
 
